@@ -33,9 +33,16 @@ function db(req, res, next) {
 }
 
 var serveStatic = require("serve-static");
+function requireHTTPS(req, res, next) {
+  if (!req.secure && req.get('x-forwarded-proto') !== 'https' && process.env.NODE_ENV !== "development") {
+    return res.redirect('https://' + req.get('host') + req.url);
+  }
+  next();
+}
 
 const app = express();
 app.use(cookieParser(keys.cookie));
+app.use(requireHTTPS);
 app.use(morgan("dev"));
 app.use(history({
   verbose: true
