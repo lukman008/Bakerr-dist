@@ -1,51 +1,54 @@
-const express = require('express')
-const morgan = require('morgan')
-const jsdom = require('jsdom')
-const { JSDOM } = jsdom
-const { window } = new JSDOM(`<!DOCTYPE html>`)
-const $ = require('jquery')(window)
-const mongo = require('./mongo-config')
-const keys = require('./keys-config')
-const cookieParser = require('cookie-parser')
-const MongoClient = require('mongodb').MongoClient;
-
+const express = require("express");
+const morgan = require("morgan");
+const jsdom = require("jsdom");
+const { JSDOM } = jsdom;
+const { window } = new JSDOM(`<!DOCTYPE html>`);
+const $ = require("jquery")(window);
+const mongo = require("./mongo-config");
+const keys = require("./keys-config");
+const cookieParser = require("cookie-parser");
+const MongoClient = require("mongodb").MongoClient;
 
 const connection = MongoClient.connect(mongo.url, {
-  useNewUrlParser: true
+  useNewUrlParser: true,
 });
-function db(req,res,next){   
-  connection.then(function(cursor){
-    let _db = cursor.db(mongo.db)
-    req.db = _db;
-    next()
-  }).catch((function (err) {
-      if(err) throw res.status(500).send(err)
-  }));
+function db(req, res, next) {
+  connection
+    .then(function(cursor) {
+      let _db = cursor.db(mongo.db);
+      req.db = _db;
+      next();
+    })
+    .catch(function(err) {
+      if (err) {
+        console.log("--------------- Database Error -----------------")
+        console.log(err)
+        res.status(500).send(err);
+        return
+      }
+    });
 }
 
-var serveStatic = require('serve-static')
+var serveStatic = require("serve-static");
 
+const app = express();
+app.use(cookieParser(keys.cookie));
+app.use(morgan("dev"));
+app.use(serveStatic(__dirname + "/public"));
 
-const app = express()
-app.use(cookieParser(keys.cookie))
-app.use(morgan('dev'))
-app.use(serveStatic(__dirname + '/public'))
-
-app.use(function (req, res, next) {
-  res.header('Access-Control-Allow-Credentials', true)
-  res.header('Access-Control-Allow-Origin', req.headers.origin)
-  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Credentials", true);
+  res.header("Access-Control-Allow-Origin", req.headers.origin);
+  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
   res.header(
-    'Access-Control-Allow-Headers',
-    'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept'
-  )
-  next()
-})
+    "Access-Control-Allow-Headers",
+    "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+  );
+  next();
+});
 
-
-app.use('/api', db, require('./routes/'))
-var port = process.env.PORT || 8081
+app.use("/api", db, require("./routes/"));
+var port = process.env.PORT || 8081;
 app.listen(port, () => {
-  console.log(`Server listening on ${port}`)
- 
-})
+  console.log(`Server listening on ${port}`);
+});

@@ -107,8 +107,8 @@ function validate (req, res, next) {
   )
 }
 
-router.get('/', authorize, function (req, res) {
-    req.body.createCollection('Vendors', function (err, collection) {
+router.get('/',authorize, function (req, res) {
+    req.db.createCollection('Vendors', function (err, collection) {
       if (err) throw res.status(500).send(err)
       collection.find({}, { password: 0 }).toArray(function (err, sigs) {
         if (err) throw res.status(500).send(err)

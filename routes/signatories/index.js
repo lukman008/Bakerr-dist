@@ -54,6 +54,7 @@ function authorize (req, res, next) {
   }
 }
 function exists (req, res, next) {
+  req.body.bvn = parseInt(req.body.bvn)
   req.db.createCollection('Signatories', function (err, collection) {
     if (err) throw res.status(500).send(err)
     collection.findOne({ bvn: req.body.bvn }, function (err, sig) {
@@ -95,6 +96,10 @@ function validate (req, res, next) {
       if (response.statusCode === 200) {
         let data = JSON.parse(body)
         if (data.status && data.message === 'BVN resolved') {
+          console.log(data.data.first_name)
+          req.body.name = data.data.first_name + " "+ data.data.last_name
+          req.body.phone = data.data.mobile
+
           next()
         } else {
           res.status(400).send({
@@ -102,6 +107,7 @@ function validate (req, res, next) {
           })
         }
       } else {
+        console.log(response.statusCode, body)
         res.status(400).send({
             state: 'UNABLE TO RESOLVE BVN'
           })
@@ -118,10 +124,10 @@ async function hashPassword (password) {
     })
   })
 }
-router.get('/', authorize, function (req, res) {
-  req.body.createCollection('Signatories', function (err, collection) {
+router.get('/', authorize,  function (req, res) {
+  req.db.createCollection('Signatories', function (err, collection) {
     if (err) throw res.status(500).send(err)
-    collection.find({}, { password: 0 }).toArray(function (err, sigs) {
+    collection.find({}).project( { password: 0 }).toArray(function (err, sigs) {
       if (err) throw res.status(500).send(err)
       res.json({
         state: 'OK',
@@ -142,6 +148,8 @@ router.post('/', [authorize, validate, exists], function (req, res) {
 
   let newSignatory = {
     _id: uniqid('sig-'),
+    name: req.body.name,
+    phone: req.body.phone,
     email,
     bvn,
     type,
@@ -161,7 +169,7 @@ router.post('/', [authorize, validate, exists], function (req, res) {
   })
 })
 
-router.patch('/:selector/activate', async function (req, res) {
+router.post('/:selector/activate', async function (req, res) {
   let body = req.body
   let rules = [
     {
@@ -171,8 +179,8 @@ router.patch('/:selector/activate', async function (req, res) {
       required: true
     },
     {
-      key: 'name',
-      type: 'string',
+      key: 'bvn',
+      type: 'number',
       required: true
     }
   ]
@@ -199,15 +207,30 @@ router.patch('/:selector/activate', async function (req, res) {
       },
       function (err, result) {
         if (err) throw res.status(500).send(err)
+        console.log(result)
         if(!result.lastErrorObject.updatedExisting){
             res.status(204).json({
                 state: "NOTHING CHANGED"
             })
+            return;
         }
-        res.json({
+        jwt.sign(result.value, keys.jwt, function (err, token) {
+          if (err) throw res.status(500).send(err)
+          res.cookie('token', token, {
+            maxAge: 6048000000,
+            httpOnly: true,
+            signed: true,
+            secure: false,
+            domain: 'bakerrpay.herokuapp.com'
+          })
+          result.token = token
+          delete result.password
+          res.json({
             state: 'OK',
             payload: result.value
           })
+        })
+        
       }
     )
   })
