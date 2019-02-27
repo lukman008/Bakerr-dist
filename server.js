@@ -37,8 +37,10 @@ var serveStatic = require("serve-static");
 const app = express();
 app.use(cookieParser(keys.cookie));
 app.use(morgan("dev"));
+app.use(history({
+  verbose: true
+}));
 app.use(serveStatic(__dirname + "/public"));
-app.use(history());
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Credentials", true);
   res.header("Access-Control-Allow-Origin", req.headers.origin);
