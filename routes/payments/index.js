@@ -107,7 +107,6 @@ router.post("/", authorize, function(req, res) {
         });
         return;
       }
-      req.body.amount.replace(/,/g, "");
       
       bcrypt.compare(req.body.password, result.password, function(err, resp) {
         if (err) throw res.status(500).send(err);
@@ -160,8 +159,6 @@ router.post("/", authorize, function(req, res) {
     });
   });
 
-  // req.body.amount.replace(/,/g,'');
-  // req.body.amount = parseFloat(req.body.amount) * 100
 });
 
 

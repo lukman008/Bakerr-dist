@@ -58,6 +58,7 @@ router.get('/resolve_account/:acct/:bank', function(req,res){
         {
           url: `https://api.paystack.co/bank/resolve?account_number=${req.params.acct}&bank_code=${req.params.bank}`,
           method: 'GET',
+          jar:true,
           headers: {
             Authorization: 'Bearer ' + paystack.secret
           }
@@ -85,5 +86,6 @@ router.get('/resolve_account/:acct/:bank', function(req,res){
         }
       )
 })
+
 
 module.exports = router;

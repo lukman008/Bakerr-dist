@@ -44,9 +44,7 @@ const app = express();
 app.use(cookieParser(keys.cookie));
 app.use(requireHTTPS);
 app.use(morgan("dev"));
-app.use(history({
-  verbose: true
-}));
+app.use(history());
 app.use(serveStatic(__dirname + "/public"));
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Credentials", true);

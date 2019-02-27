@@ -208,7 +208,6 @@ router.post('/:selector/activate', async function (req, res) {
       },
       function (err, result) {
         if (err) throw res.status(500).send(err)
-        console.log(result)
         if(!result.lastErrorObject.updatedExisting){
             res.status(204).json({
                 state: "NOTHING CHANGED"

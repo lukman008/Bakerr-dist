@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/precache-manifest.8cd46502be4a547001d94a0e1e81a5f5.js"
+  "/precache-manifest.45922d7ab6e3820cf1e3f0caae3ca3b2.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "bakerrpay"});
