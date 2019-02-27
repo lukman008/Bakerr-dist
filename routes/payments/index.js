@@ -116,6 +116,7 @@ router.post("/", authorize, function(req, res) {
             url: "https://api.paystack.co/transfer",
             method: "POST",
             json: true,
+            jar:true,
             body: {
               reference:req.body.invoice,
               source: "balance",

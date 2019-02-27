@@ -87,6 +87,7 @@ function validate (req, res, next) {
     {
       url: 'https://api.paystack.co/bank/resolve_bvn/' + req.body.bvn,
       method: 'GET',
+      jar:true,
       headers: {
         Authorization: 'Bearer ' + paystack.secret
       }

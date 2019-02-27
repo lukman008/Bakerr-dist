@@ -81,6 +81,7 @@ function validate (req, res, next) {
     {
       url: `https://api.paystack.co/bank/resolve?account_number=${req.body.account_number}&bank_code=${req.body.bank_code}`,
       method: 'GET',
+      jar:true,
       headers: {
         Authorization: 'Bearer ' + paystack.secret
       }
@@ -173,6 +174,7 @@ router.get('/',authorize, function (req, res) {
         url: "https://api.paystack.co/transferrecipient",
         method: 'POST',
         body:newVendor,
+        jar:true,
         json:true,
         headers: {
           Authorization: 'Bearer ' + paystack.secret
