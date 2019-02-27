@@ -10,7 +10,7 @@ const keys = require("./keys-config");
 const cookieParser = require("cookie-parser");
 const MongoClient = require("mongodb").MongoClient;
 const bcrypt = require('bcrypt');
-const saltRounds = 10;
+
 module.exports.bcrypt = bcrypt
 const connection = MongoClient.connect(mongo.url, {
   useNewUrlParser: true,

@@ -3,7 +3,7 @@ const express = require('express')
 const request = require('request')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('../../server').bcrypt
-
+const saltRounds = 10;
 const router = express.Router()
 const keys = require('../../keys-config')
 const cookieParser = require('cookie-parser')
@@ -128,7 +128,7 @@ async function hashPassword (password) {
 router.get('/', authorize,  function (req, res) {
   req.db.createCollection('Signatories', function (err, collection) {
     if (err) throw res.status(500).send(err)
-    collection.find({}).project( { password: 0 }).toArray(function (err, sigs) {
+    collection.find({}).project( { password: 0, bvn:0 }).toArray(function (err, sigs) {
       if (err) throw res.status(500).send(err)
       res.json({
         state: 'OK',
