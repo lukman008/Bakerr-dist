@@ -2,8 +2,8 @@ const bodyParser = require('body-parser')
 const express = require('express')
 const request = require('request')
 const jwt = require('jsonwebtoken')
-const bcrypt = require('bcrypt')
-const saltRounds = 10
+const bcrypt = require('../../server').bcrypt
+
 const router = express.Router()
 const keys = require('../../keys-config')
 const cookieParser = require('cookie-parser')
