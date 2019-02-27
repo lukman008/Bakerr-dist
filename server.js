@@ -2,6 +2,7 @@ const express = require("express");
 const morgan = require("morgan");
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
+const history = require('connect-history-api-fallback');
 const { window } = new JSDOM(`<!DOCTYPE html>`);
 const $ = require("jquery")(window);
 const mongo = require("./mongo-config");
@@ -37,7 +38,7 @@ const app = express();
 app.use(cookieParser(keys.cookie));
 app.use(morgan("dev"));
 app.use(serveStatic(__dirname + "/public"));
-
+app.use(history());
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Credentials", true);
   res.header("Access-Control-Allow-Origin", req.headers.origin);
