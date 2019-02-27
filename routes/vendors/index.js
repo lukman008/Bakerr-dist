@@ -262,7 +262,7 @@ router.patch('/:id', [authorize, validate], function (req, res) {
   vendor.currency = 'NGN'
 
   request({
-    url: "",
+    url: `https://api.paystack.co/transferrecipient/${vendor.recipient_code}`,
     method: "PUT",
     body: vendor,
     json: true,
