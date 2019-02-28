@@ -75,10 +75,12 @@ function isEmail (email) {
   return re.test(String(email).toLowerCase())
 }
 function validate (req, res, next) {
+  console.log("---- VALIDATE-----")
   if (!isEmail(req.body.email)) {
     res.status(400).send({
       state: 'INVALID EMAIL'
     })
+    return;
   }
   request(
     {
@@ -92,6 +94,7 @@ function validate (req, res, next) {
       }
     },
     function (err, response, body) {
+      console.log(body)
       if (err) throw res.status(500).send(err)
       let data = JSON.parse(body)
       if (response.statusCode === 200) {
@@ -109,6 +112,7 @@ function validate (req, res, next) {
         })
       }
     }
+    
   )
 }
 
@@ -260,7 +264,7 @@ router.post('/:id', [authorize, validate], function (req, res) {
   vendor.type = 'nuban'
   vendor.name = vendor.vendor_name
   vendor.currency = 'NGN'
-
+console.log("--------EDIT RECEPIENT----------")
   request({
     url: `https://api.paystack.co/transferrecipient/${vendor.recipient_code}`,
     method: "PUT",
@@ -272,6 +276,7 @@ router.post('/:id', [authorize, validate], function (req, res) {
         Authorization: 'Bearer ' + paystack.secret
       }
   }, function(err, response, body){
+    console.log(body)
     if (err) throw res.status(500).send(err)
     if(response.statusCode == 200){
       if(body.status){
@@ -292,7 +297,7 @@ router.post('/:id', [authorize, validate], function (req, res) {
                 return
               }
               res.json({
-                stae: 'OK',
+                state: 'OK',
                 payload: result.value
               })
             }
