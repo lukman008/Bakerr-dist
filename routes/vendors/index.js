@@ -213,8 +213,6 @@ router.delete('/:recipient_code', middleware.authorize, function (req, res) {
         Authorization: 'Bearer ' + paystack.secret
       }
   }, function(err, response, body ){
-    if (err) throw res.status(500).send(err)
-    if(body.status){
       req.db.createCollection('Vendors', function (err, collection) {
         if (err) {
           console.log(err)
@@ -231,13 +229,7 @@ router.delete('/:recipient_code', middleware.authorize, function (req, res) {
           })
         })
       })
-    }else{
-      
-        console.log(body)
-        console.log(response.statusCode, response.statusMessage)
-      
-      res.status(response.statusCode).send(response.statusMessage)
-    }
+    
   })
 
 })
