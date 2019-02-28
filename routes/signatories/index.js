@@ -84,6 +84,7 @@ router.post('/:selector/activate', async function (req, res) {
     {
       key: 'bvn',
       type: 'number',
+      length:11,
       required: true
     }
   ]

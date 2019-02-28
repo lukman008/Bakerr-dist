@@ -18,7 +18,6 @@ router.use(bodyParser.json())
 
 router.use(cookieParser(keys.cookie))
 
-
 router.get('/', middleware.authorize, function (req, res) {
   req.db.createCollection('Vendors', function (err, collection) {
     if (err) throw res.status(500).send(err)
@@ -32,91 +31,95 @@ router.get('/', middleware.authorize, function (req, res) {
   })
 })
 
-router.post('/', [middleware.authorize, middleware.exists, middleware.validate], function (req, res) {
-  let newVendor = req.body
-  newVendor._id = uniqid('ven-')
-  let rules = [
-    {
-      key: 'account_number',
-      required: true,
-      type: 'number'
-    },
-    {
-      key: 'vendor_name',
-      required: true,
-      type: 'string'
-    },
-    {
-      key: 'bank_code',
-      required: true,
-      type: 'number'
-    },
-    {
-      key: 'account_name',
-      required: true,
-      type: 'string'
-    },
-    {
-      key: 'description',
-      required: true,
-      type: 'string'
-    },
-    {
-      key: 'email',
-      required: true,
-      type: 'string'
+router.post(
+  '/',
+  [middleware.authorize, middleware.exists, middleware.validate],
+  function (req, res) {
+    let newVendor = req.body
+    newVendor._id = uniqid('ven-')
+    let rules = [
+      {
+        key: 'account_number',
+        required: true,
+        type: 'number'
+      },
+      {
+        key: 'vendor_name',
+        required: true,
+        type: 'string'
+      },
+      {
+        key: 'bank_code',
+        required: true,
+        type: 'number'
+      },
+      {
+        key: 'account_name',
+        required: true,
+        type: 'string'
+      },
+      {
+        key: 'description',
+        required: true,
+        type: 'string'
+      },
+      {
+        key: 'email',
+        required: true,
+        type: 'string'
+      }
+    ]
+    let validation = validator(newVendor, rules)
+
+    if (!validation.isValid) {
+      res.status(400).send({
+        state: validation
+      })
+      return
     }
-  ]
-  let validation = validator(newVendor, rules)
+    newVendor.createdOn = new Date()
 
-  if (!validation.isValid) {
-    res.status(400).send({
-      state: validation
-    })
-    return
-  }
-  newVendor.createdOn = new Date()
+    newVendor.type = 'nuban'
+    newVendor.name = newVendor.vendor_name
+    newVendor.currency = 'NGN'
+    request(
+      {
+        url: 'https://api.paystack.co/transferrecipient',
+        method: 'POST',
+        body: newVendor,
+        jar: true,
+        json: true,
+        headers: {
+          Authorization: 'Bearer ' + paystack.secret
+        }
+      },
+      function (err, response, body) {
+        if (err) {
+          throw res.status(500).send(err)
+        }
+        let data = body
 
-  newVendor.type = 'nuban'
-  newVendor.name = newVendor.vendor_name
-  newVendor.currency = 'NGN'
-  request(
-    {
-      url: 'https://api.paystack.co/transferrecipient',
-      method: 'POST',
-      body: newVendor,
-      jar: true,
-      json: true,
-      headers: {
-        Authorization: 'Bearer ' + paystack.secret
-      }
-    },
-    function (err, response, body) {
-      if (err) {
-        throw res.status(500).send(err)
-      }
-      let data = body
-      
-      newVendor.recipient_code = data.data.recipient_code
-      if (data.status) {
-        req.db.createCollection('Vendors', function (err, collection) {
-          if (err) throw res.status(500).send(err)
-          collection.insertOne(newVendor, { w: 1 }, function (err, result) {
+        newVendor.recipient_code = data.data.recipient_code
+        if (data.status) {
+          req.db.createCollection('Vendors', function (err, collection) {
             if (err) throw res.status(500).send(err)
-            res.json({
-              state: 'OK',
-              payload: newVendor
+            collection.insertOne(newVendor, { w: 1 }, function (err, result) {
+              if (err) throw res.status(500).send(err)
+              res.json({
+                state: 'OK',
+                payload: newVendor
+              })
             })
           })
-        })
-      } else {
-        res.status(400).send({
-          state: data['message']
-        })
+        } else {
+          res.status(400).send({
+            state: data['message']
+          })
+        }
       }
-    }
-  )
-})
+    )
+  }
+)
 
 router.post('/:id', middleware.authorize, function (req, res) {
   let rules = [
@@ -143,9 +146,9 @@ router.post('/:id', middleware.authorize, function (req, res) {
   ]
   let validation = validator(req.body, rules)
   let vendor = {
-   email: req.body.email,
-   name: req.body.vendor_name,
-   description: req.body.description
+    email: req.body.email,
+    name: req.body.vendor_name,
+    description: req.body.description
   }
   if (!validation.isValid) {
     res.status(400).send({
@@ -153,20 +156,22 @@ router.post('/:id', middleware.authorize, function (req, res) {
     })
     return
   }
-  request({
-    url: `https://api.paystack.co/transferrecipient/${vendor.recipient_code}`,
-    method: "PUT",
-    body: vendor,
-    json: true,
-    jar: true,
+  request(
+    {
+      url: `https://api.paystack.co/transferrecipient/${vendor.recipient_code}`,
+      method: 'PUT',
+      body: vendor,
+      json: true,
+      jar: true,
       json: true,
       headers: {
         Authorization: 'Bearer ' + paystack.secret
       }
-  }, function(err, response, body){
-    console.log(body)
-    if (err) throw res.status(500).send(err)
-    if(body.status){
+    },
+    function (err, response, body) {
+      console.log(body)
+      if (err) throw res.status(500).send(err)
+      if (body.status) {
         req.db.createCollection('Vendors', function (err, collection) {
           if (err) throw res.status(500).send(err)
           collection.findOneAndUpdate(
@@ -190,14 +195,43 @@ router.post('/:id', middleware.authorize, function (req, res) {
             }
           )
         })
-      }else {
+      } else {
         res.status(response.statusCode).send({
           state: data[response.statusMessage]
         })
       }
-  
-    
+    }
+  )
+})
+
+router.delete(':recipient_code', middleware.authorize, function (req, res) {
+  request({
+    url: 'https://api.paystack.co/transferrecipient/'+ req.params.recipient_code,
+    method: "DELETE",
+    json: true,
+      jar: true,
+      json: true,
+      headers: {
+        Authorization: 'Bearer ' + paystack.secret
+      }
+  }, function(err, response, body ){
+    if (err) throw res.status(500).send(err)
+    if(body.status){
+      req.db.createCollection('Vendors', function (err, collection) {
+        if (err) throw res.status(500).send(err)
+        collection.deleteOne({ recipient_code: req.params.recipient_code }, function (err, result) {
+          if (err) throw res.status(500).send(err)
+          res.json({
+            state: 'OK',
+            payload: result
+          })
+        })
+      })
+    }else{
+      res.status(response.statusCode).send(response.statusMessage)
+    }
   })
+
 })
 
 module.exports = router
