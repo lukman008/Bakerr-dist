@@ -164,7 +164,6 @@ router.post('/:id', middleware.authorize, function (req, res) {
       body: vendor,
       json: true,
       jar: true,
-      json: true,
       headers: {
         Authorization: 'Bearer ' + paystack.secret
       }
@@ -209,9 +208,7 @@ router.delete('/:recipient_code', middleware.authorize, function (req, res) {
   request({
     url: 'https://api.paystack.co/transferrecipient/'+ req.params.recipient_code,
     method: "DELETE",
-    json: true,
       jar: true,
-      json: true,
       headers: {
         Authorization: 'Bearer ' + paystack.secret
       }
