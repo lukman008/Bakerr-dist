@@ -219,9 +219,15 @@ router.delete('/:recipient_code', middleware.authorize, function (req, res) {
     if (err) throw res.status(500).send(err)
     if(body.status){
       req.db.createCollection('Vendors', function (err, collection) {
-        if (err) throw res.status(500).send(err)
+        if (err) {
+          console.log(err)
+          throw res.status(500).send(err)
+        }
         collection.deleteOne({ recipient_code: req.params.recipient_code }, function (err, result) {
-          if (err) throw res.status(500).send(err)
+          if (err) {
+            console.log(err)
+            throw res.status(500).send(err)
+          }
           res.json({
             state: 'OK',
             payload: result
@@ -229,6 +235,10 @@ router.delete('/:recipient_code', middleware.authorize, function (req, res) {
         })
       })
     }else{
+      
+        console.log(body)
+        console.log(response.statusCode, response.statusMessage)
+      
       res.status(response.statusCode).send(response.statusMessage)
     }
   })
