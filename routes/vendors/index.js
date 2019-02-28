@@ -215,25 +215,10 @@ router.post('/', [authorize, exists, validate], function (req, res) {
   )
 })
 
-router.post('/:id', [authorize, validate], function (req, res) {
+router.post('/:id', authorize, function (req, res) {
   let rules = [
     {
-      key: 'account_number',
-      required: true,
-      type: 'number'
-    },
-    {
       key: 'vendor_name',
-      required: true,
-      type: 'string'
-    },
-    {
-      key: 'bank_code',
-      required: true,
-      type: 'number'
-    },
-    {
-      key: 'account_name',
       required: true,
       type: 'string'
     },
@@ -254,17 +239,17 @@ router.post('/:id', [authorize, validate], function (req, res) {
     }
   ]
   let validation = validator(req.body, rules)
-  let vendor = req.body
+  let vendor = {
+   email: req.body.email,
+   name: req.body.vendor_name,
+   description: req.body.description
+  }
   if (!validation.isValid) {
     res.status(400).send({
       state: validation
     })
     return
   }
-  vendor.type = 'nuban'
-  vendor.name = vendor.vendor_name
-  vendor.currency = 'NGN'
-console.log("--------EDIT RECEPIENT----------")
   request({
     url: `https://api.paystack.co/transferrecipient/${vendor.recipient_code}`,
     method: "PUT",
@@ -278,12 +263,11 @@ console.log("--------EDIT RECEPIENT----------")
   }, function(err, response, body){
     console.log(body)
     if (err) throw res.status(500).send(err)
-    if(response.statusCode == 200){
-      if(body.status){
+    if(body.status){
         req.db.createCollection('Vendors', function (err, collection) {
           if (err) throw res.status(500).send(err)
           collection.findOneAndUpdate(
-            { _id: req.params._id },
+            { _id: req.params.id },
             { $set: vendor },
             {
               returnOriginal: false
@@ -304,12 +288,12 @@ console.log("--------EDIT RECEPIENT----------")
           )
         })
       }else {
-        res.status(400).send({
-          state: data['message']
+        res.status(response.statusCode).send({
+          state: data[response.statusMessage]
         })
       }
   
-    }
+    
   })
 })
 
