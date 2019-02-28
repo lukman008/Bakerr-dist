@@ -55,7 +55,7 @@ router.post('/signin', function (req, res) {
 
 router.post('/signout', function(req,res){
   res.cookie('token', req.signedCookies.token, {
-    expires: Date.now(),
+    expires: new Date(),
     httpOnly: true,
     signed: true,
     secure: false,
