@@ -53,4 +53,12 @@ router.post('/signin', function (req, res) {
   })
 })
 
+router.post('/signout', function(req,res){
+  res.clearCookie('token');
+  res.json({
+    state: "OK",
+    payload:null
+  })
+})
+
 module.exports = router
