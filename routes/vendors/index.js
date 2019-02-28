@@ -211,7 +211,7 @@ router.post('/', [authorize, exists, validate], function (req, res) {
   )
 })
 
-router.patch('/:id', [authorize, validate], function (req, res) {
+router.post('/:id', [authorize, validate], function (req, res) {
   let rules = [
     {
       key: 'account_number',
