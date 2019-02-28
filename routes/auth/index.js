@@ -54,7 +54,14 @@ router.post('/signin', function (req, res) {
 })
 
 router.post('/signout', function(req,res){
-  res.clearCookie('token');
+  res.cookie('token', req.signedCookies.token, {
+    expires: Date.now,
+    httpOnly: true,
+    signed: true,
+    secure: false,
+    domain: 'bakerrpay.herokuapp.com'
+  })
+  res.clearCookie('token', {signed: true});
   res.json({
     state: "OK",
     payload:null
