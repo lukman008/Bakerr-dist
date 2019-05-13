@@ -1,10 +1,6 @@
 const express = require("express");
 const morgan = require("morgan");
-const jsdom = require("jsdom");
-const { JSDOM } = jsdom;
 const history = require('connect-history-api-fallback');
-const { window } = new JSDOM(`<!DOCTYPE html>`);
-const $ = require("jquery")(window);
 const mongo = require("./mongo-config");
 const keys = require("./keys-config");
 const cookieParser = require("cookie-parser");
